@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AdminApplications from "@/components/admin/AdminApplications";
 
 export default async function AdminPage() {
   return (
@@ -28,7 +29,13 @@ export default async function AdminPage() {
 
       <div className="mb-4">
         <Link href="/admin/internships" className="text-primary underline">Manage Internships</Link>
+        <Link href="/admin/applications" className="ml-4 text-primary underline">Review Applications</Link>
       </div>
+
+      <section className="mb-6">
+        <h2 className="text-lg font-semibold mb-3">Recent applications</h2>
+        <AdminApplications preview />
+      </section>
     </div>
   );
 }

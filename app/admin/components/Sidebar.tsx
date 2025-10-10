@@ -13,6 +13,7 @@ export function AdminSidebar() {
       <nav className="flex flex-col gap-2">
         <Link href="/admin" className="text-sm hover:text-primary">Dashboard</Link>
         <Link href="/admin/internships" className="text-sm hover:text-primary">Internships</Link>
+        <Link href="/admin/applications" className="text-sm hover:text-primary">Applications</Link>
         <Link href="/admin/users" className="text-sm hover:text-primary">Users (TBD)</Link>
       </nav>
       <div className="mt-6">
