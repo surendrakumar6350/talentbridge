@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { connectDb } from "@/dbConnection/connect";
 import { Application } from "@/dbConnection/Schema/application";
+// ensure Internship model is registered for populate
+import "@/dbConnection/Schema/internship";
 import { User } from "@/dbConnection/Schema/user";
 import jwt from "jsonwebtoken";
 

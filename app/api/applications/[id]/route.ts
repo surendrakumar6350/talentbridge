@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import { connectDb } from "@/dbConnection/connect";
 import { Application } from "@/dbConnection/Schema/application";
 import { User } from "@/dbConnection/Schema/user";
+// ensure Internship model is registered for populate
+import "@/dbConnection/Schema/internship";
 import jwt from "jsonwebtoken";
 
 async function getUserFromRequest(req: NextRequest) {
