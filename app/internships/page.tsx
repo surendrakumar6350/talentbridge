@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
+import ApplyModal from "@/components/ApplyModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ export default function InternshipsPage() {
 
   // Simple create form state
   const [showForm, setShowForm] = useState(false);
+  const [applyingTo, setApplyingTo] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
   const [description, setDescription] = useState("");
@@ -127,11 +129,17 @@ export default function InternshipsPage() {
                       {it.stipend && <p className="mt-2"><span className="font-medium">Stipend:</span> {it.stipend}</p>}
                     </div>
                   </div>
-                  <Button className="whitespace-nowrap">Apply Now</Button>
+                  <Button className="whitespace-nowrap" onClick={() => setApplyingTo(it._id || null)}>Apply Now</Button>
                 </div>
               </CardContent>
             </Card>
           ))}
+          {applyingTo && (
+            <ApplyModal internshipId={applyingTo} onClose={() => setApplyingTo(null)} onSuccess={() => {
+              // refresh list
+              fetchInternships();
+            }} />
+          )}
         </div>
       </main>
     </div>
