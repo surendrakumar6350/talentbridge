@@ -15,23 +15,25 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
-    const success = async (credentialResponse: any) => {
+    type GoogleResponse = { credential?: string } | undefined | null;
+    const success = async (credentialResponse: GoogleResponse) => {
         try {
-            const credential = credentialResponse?.credential;
+            const credential = credentialResponse && typeof credentialResponse === 'object' ? credentialResponse.credential : undefined;
             if (!credential) return alert('Missing credential from Google');
 
             const res = await fetch('/api/auth/google', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential }) });
             const j = await res.json();
-            if (j.success && j.token) {
+            if (j && j.success && j.token) {
                 localStorage.setItem('token', j.token);
                 alert('Login successful');
                 onClose();
                 window.location.href = '/';
             } else {
-                alert(j.message || 'Login failed');
+                alert(j?.message || 'Login failed');
             }
-        } catch (err: any) {
-            alert(err.message || String(err));
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            alert(message);
         }
     };
 

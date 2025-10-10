@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Internship = {
   _id?: string;
@@ -35,8 +35,9 @@ export default function InternshipsPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setInternships(data.data || []);
-    } catch (err: any) {
-      setError(err.message || String(err));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -52,8 +53,9 @@ export default function InternshipsPage() {
       const res = await fetch("/api/seed/internships", { method: "POST" });
       if (!res.ok) throw new Error("Seed failed");
       await fetchInternships();
-    } catch (err: any) {
-      setError(err.message || String(err));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -71,8 +73,9 @@ export default function InternshipsPage() {
       setDescription("");
       setShowForm(false);
       await fetchInternships();
-    } catch (err: any) {
-      setError(err.message || String(err));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setLoading(false);
     }
