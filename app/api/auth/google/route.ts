@@ -47,7 +47,8 @@ export async function POST(request: Request) {
     const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, secret, { expiresIn: "7d" });
 
     return NextResponse.json({ success: true, token });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message || String(error) }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }
