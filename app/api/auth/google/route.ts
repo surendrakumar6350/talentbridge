@@ -40,18 +40,44 @@ export async function POST(request: Request) {
     }
 
     const picture = info.picture || undefined;
+    // If Google provides a picture URL, try to fetch and convert it to a base64 data URL
+    async function fetchImageAsDataUrl(url: string): Promise<string | undefined> {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return undefined;
+        const contentType = res.headers.get("content-type") || "image/jpeg";
+        const buffer = await res.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString("base64");
+        return `data:${contentType};base64,${base64}`;
+      } catch {
+        return undefined;
+      }
+    }
+
     let user = await User.findOne({ email });
     if (!user) {
-      user = await User.create({ email, name, googleId, image: picture });
-    } else if (picture && user.image !== picture) {
-      user.image = picture;
-      await user.save();
+      // try to fetch and store base64 image if available
+      const imageData = picture ? await fetchImageAsDataUrl(picture) : undefined;
+      user = await User.create({ email, name, googleId, image: imageData || picture });
+    } else if (picture) {
+      // Try to update to base64 representation when possible
+      const imageData = await fetchImageAsDataUrl(picture);
+      if (imageData && user.image !== imageData) {
+        user.image = imageData;
+        await user.save();
+      } else if (!imageData && user.image !== picture) {
+        // fallback to storing the URL if conversion failed
+        user.image = picture;
+        await user.save();
+      }
     }
 
     const secret = process.env.SECRET_JWT || "dev-secret";
     const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, secret, { expiresIn: "7d" });
 
-    return NextResponse.json({ success: true, token });
+    const res = NextResponse.json({ success: true });
+    res.cookies.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7 });
+    return res;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ success: false, message }, { status: 500 });
