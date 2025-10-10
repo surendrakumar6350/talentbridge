@@ -6,34 +6,20 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/LoginDialog";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
 import { Menu } from "lucide-react";
 
 type User = { id: string; name: string; email: string; role: string; image?: string } | null;
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<User>(null);
-  const [authChecked, setAuthChecked] = useState(false);
+  const { user, authChecked, logout: authLogout } = useAuth();
+  // local open state still required for dropdowns/dialog
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarMenu, setAvatarMenu] = useState(false);
   const avatarRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (!res.ok) return setUser(null);
-        const j = await res.json();
-        if (j?.authenticated) setUser(j.user);
-      } catch {
-        setUser(null);
-      }
-      finally {
-        setAuthChecked(true);
-      }
-    }
-    load();
-  }, []);
+  // auth is provided by AuthProvider
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -44,11 +30,7 @@ export function Header() {
   }, []);
 
   async function logout() {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } finally {
-      window.location.reload();
-    }
+    await authLogout();
   }
   return (
     <header className="w-full border-b border-border bg-card/80 backdrop-blur sticky top-0 z-30">
