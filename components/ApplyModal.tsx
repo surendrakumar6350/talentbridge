@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Props = {
   internshipId: string;
@@ -25,7 +29,10 @@ export default function ApplyModal({ internshipId, onClose, onSuccess }: Props) 
         body: JSON.stringify({ internshipId, resumeLink, message }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
+      if (!res.ok) {
+        if (res.status === 409) throw new Error(data.error || "You have already applied to this internship.");
+        throw new Error(data.error || "Failed");
+      }
       onSuccess?.(data);
       onClose?.();
     } catch (err: unknown) {
@@ -37,25 +44,39 @@ export default function ApplyModal({ internshipId, onClose, onSuccess }: Props) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-md rounded bg-white p-6 shadow-lg">
-        <h3 className="mb-4 text-lg font-semibold">Apply to this internship</h3>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose?.(); }}>
+      <DialogContent>
         <form onSubmit={submit}>
-          <label className="mb-2 block text-sm">Resume link (optional)</label>
-          <input className="mb-3 w-full rounded border px-3 py-2" value={resumeLink} onChange={(e) => setResumeLink(e.target.value)} />
-          <label className="mb-2 block text-sm">Message (optional)</label>
-          <textarea className="mb-3 w-full rounded border p-2" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <DialogHeader>
+            <DialogTitle>Apply to this internship</DialogTitle>
+          </DialogHeader>
 
-          {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
+          <div className="grid gap-2">
+            <div>
+              <Label>Resume link (optional)</Label>
+              <Input value={resumeLink} onChange={(e) => setResumeLink(e.target.value)} placeholder="https://" />
+            </div>
 
-          <div className="flex justify-end gap-2">
-            <button type="button" className="rounded border px-3 py-1" onClick={() => onClose?.()}>Cancel</button>
-            <button type="submit" disabled={loading} className="rounded bg-blue-600 px-3 py-1 text-white">
-              {loading ? "Applying..." : "Apply"}
-            </button>
+            <div>
+              <Label>Message (optional)</Label>
+              <textarea
+                className="min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            </div>
+
+            {error && <div className="text-sm text-destructive">{error}</div>}
           </div>
+
+          <DialogFooter>
+            <div className="flex gap-2">
+              <Button variant="outline" type="button" onClick={() => onClose?.()}>Cancel</Button>
+              <Button type="submit" disabled={loading}>{loading ? "Applying..." : "Apply"}</Button>
+            </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

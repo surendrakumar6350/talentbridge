@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Header } from "@/components/header";
 import ApplyModal from "@/components/ApplyModal";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +17,16 @@ type Internship = {
   skillsRequired?: string[];
 };
 
+type Application = {
+  _id?: string;
+  internship?: { _id?: string } | string;
+};
+
 export default function InternshipsPage() {
   const [internships, setInternships] = useState<Internship[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
 
   // Simple create form state
   const [showForm, setShowForm] = useState(false);
@@ -29,7 +35,29 @@ export default function InternshipsPage() {
   const [company, setCompany] = useState("");
   const [description, setDescription] = useState("");
 
-  async function fetchInternships() {
+  const fetchUserApplications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/applications");
+      if (!res.ok) {
+        setAppliedIds(new Set());
+        return;
+      }
+      const j = await res.json();
+      const apps: Application[] = j.applications || [];
+      const ids = new Set<string>();
+      for (const a of apps) {
+        const internship = a.internship;
+        const id = internship && typeof internship === "object" ? internship._id : internship;
+        if (id) ids.add(String(id));
+      }
+      setAppliedIds(ids);
+    } catch {
+      setAppliedIds(new Set());
+    }
+  }, []);
+
+
+  const fetchInternships = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -37,17 +65,21 @@ export default function InternshipsPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setInternships(data.data || []);
+      // After fetching internships, refresh user's applications so we can mark applied ones
+      await fetchUserApplications();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
     } finally {
       setLoading(false);
     }
-  }
+  }, [fetchUserApplications]);
+
+  // remove duplicate - using the useCallback version above
 
   useEffect(() => {
     fetchInternships();
-  }, []);
+  }, [fetchInternships]);
 
   async function seed() {
     setLoading(true);
@@ -129,7 +161,11 @@ export default function InternshipsPage() {
                       {it.stipend && <p className="mt-2"><span className="font-medium">Stipend:</span> {it.stipend}</p>}
                     </div>
                   </div>
-                  <Button className="whitespace-nowrap" onClick={() => setApplyingTo(it._id || null)}>Apply Now</Button>
+                  {appliedIds.has(it._id || "") ? (
+                    <Button className="whitespace-nowrap" disabled>Applied</Button>
+                  ) : (
+                    <Button className="whitespace-nowrap" onClick={() => setApplyingTo(it._id || null)}>Apply Now</Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
