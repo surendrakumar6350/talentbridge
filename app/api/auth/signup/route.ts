@@ -16,9 +16,12 @@ export async function POST(request: Request) {
     }
 
     const secret = process.env.SECRET_JWT || "dev-secret";
-    const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, secret, { expiresIn: "7d" });
+  const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, secret, { expiresIn: "7d" });
 
-    return NextResponse.json({ success: true, token });
+  const res = NextResponse.json({ success: true });
+  // set httpOnly cookie
+  res.cookies.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7 });
+  return res;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ success: false, message }, { status: 500 });

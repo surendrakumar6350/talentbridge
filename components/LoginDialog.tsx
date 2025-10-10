@@ -23,11 +23,11 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
 
             const res = await fetch('/api/auth/google', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential }) });
             const j = await res.json();
-            if (j && j.success && j.token) {
-                localStorage.setItem('token', j.token);
+            if (j && j.success) {
                 alert('Login successful');
                 onClose();
-                window.location.href = '/';
+                // refresh page to pick up cookie-based auth
+                window.location.reload();
             } else {
                 alert(j?.message || 'Login failed');
             }
