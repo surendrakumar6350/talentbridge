@@ -5,10 +5,51 @@ import { Briefcase } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/LoginDialog";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Menu } from "lucide-react";
+
+type User = { id: string; name: string; email: string; role: string; image?: string } | null;
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarMenu, setAvatarMenu] = useState(false);
+  const avatarRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) return setUser(null);
+        const j = await res.json();
+        if (j?.authenticated) setUser(j.user);
+      } catch {
+        setUser(null);
+      }
+      finally {
+        setAuthChecked(true);
+      }
+    }
+    load();
+  }, []);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) setAvatarMenu(false);
+    }
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
+  }, []);
+
+  async function logout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      window.location.reload();
+    }
+  }
   return (
     <header className="w-full border-b border-border bg-card/80 backdrop-blur sticky top-0 z-30">
       <div className="flex items-center justify-between py-3 px-6">
@@ -18,21 +59,92 @@ export function Header() {
         </Link>
         <div className="flex items-center gap-4">
           <nav className="hidden md:flex items-center gap-4">
-            <Link href="/" className="text-sm font-medium hover:text-primary">
-              Home
-            </Link>
-            <Link href="/internships" className="text-sm font-medium hover:text-primary">
-              Internships
-            </Link>
-            <Link href="/companies" className="text-sm font-medium hover:text-primary">
-              Companies
-            </Link>
+            <Link href="/" className="text-sm font-medium hover:text-primary">Home</Link>
+            <Link href="/internships" className="text-sm font-medium hover:text-primary">Internships</Link>
+            <Link href="/companies" className="text-sm font-medium hover:text-primary">Companies</Link>
           </nav>
-          <ThemeToggle variant="outline" />
-          <Button variant="outline" onClick={() => setOpen(true)}>Login</Button>
-          <LoginDialog isOpen={open} onClose={() => setOpen(false)} />
-        </div>
+
+          {/* Desktop avatar + theme + logout */}
+          <div className="hidden md:flex items-center gap-3">
+            {authChecked ? (user ? (
+              <div className="relative" ref={avatarRef}>
+                <button onClick={() => setAvatarMenu((s) => !s)} className="p-1">
+                  <img src={user.image || '/icon.png'} alt={user.name} className="h-8 w-8 rounded-full" />
+                </button>
+                {avatarMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded shadow p-2">
+                    <div className="text-sm font-medium mb-2">{user.name}</div>
+                    <Button onClick={logout} variant="outline" size="sm" className="w-full">Logout</Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // show Login button on desktop once auth check completes
+              <>
+                <Button variant="outline" onClick={() => setOpen(true)}>Login</Button>
+              </>
+            )) : (
+              <div className="h-8 w-8" />
+            )}
+
+            {/* Profile is placed before theme toggle on desktop */}
+            <ThemeToggle variant="outline" />
+
+            {/* Desktop logout button (visible next to theme) */}
+            {user && (
+              <Button onClick={logout} variant="outline" className="hidden md:inline-flex">Logout</Button>
+            )}
+          </div>
+
+          {/* Mobile: avatar/login before menu button */}
+          <div className="flex md:hidden items-center gap-2">
+            {authChecked ? (user ? (
+              <div className="relative" ref={avatarRef}>
+                <button onClick={() => setAvatarMenu((s) => !s)} className="p-1">
+                  <img src={user.image || '/icon.png'} alt={user.name} className="h-8 w-8 rounded-full" />
+                </button>
+                {avatarMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded shadow p-2">
+                    <div className="text-sm font-medium mb-2">{user.name}</div>
+                    <Button onClick={logout} variant="outline" size="sm" className="w-full">Logout</Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // show styled login button on mobile after auth check
+              <div>
+                <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="px-2">Login</Button>
+              </div>
+            )) : (
+              <div className="h-8 w-20" />
+            )}
+
+            <button onClick={() => setMenuOpen((s) => !s)} aria-label="menu" className="p-2">
+              <Menu />
+            </button>
+          </div>
+          </div>
       </div>
+
+      {menuOpen && (
+        <div className="md:hidden bg-card border-t border-border">
+          <div className="p-4 flex flex-col gap-2">
+            <Link href="/">Home</Link>
+            <Link href="/internships">Internships</Link>
+            <Link href="/companies">Companies</Link>
+            <div className="pt-2">
+              <ThemeToggle variant="outline" />
+            </div>
+            {user ? (
+              <Button onClick={logout} variant="outline">Logout</Button>
+            ) : (
+              <Button variant="outline" onClick={() => setOpen(true)}>Login</Button>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Global LoginDialog instance */}
+      <LoginDialog isOpen={open} onClose={() => setOpen(false)} />
     </header>
   );
 }
