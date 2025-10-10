@@ -8,6 +8,7 @@ type TokenInfo = {
   name?: string;
   sub?: string; // google user id
   aud?: string;
+  picture?: string;
   exp?: string;
 };
 
@@ -38,9 +39,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Token audience mismatch" }, { status: 400 });
     }
 
+    const picture = info.picture || undefined;
     let user = await User.findOne({ email });
     if (!user) {
-      user = await User.create({ email, name, googleId });
+      user = await User.create({ email, name, googleId, image: picture });
+    } else if (picture && user.image !== picture) {
+      user.image = picture;
+      await user.save();
     }
 
     const secret = process.env.SECRET_JWT || "dev-secret";
