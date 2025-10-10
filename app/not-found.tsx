@@ -10,7 +10,7 @@ export default function NotFound() {
           <CardTitle>404 — Page not found</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-4 text-muted-foreground">We couldn't find the page you're looking for.</p>
+          <p className="mb-4 text-muted-foreground">We could not find the page you are looking for.</p>
           <div className="flex gap-2">
             <Link href="/">
               <Button>Go home</Button>
