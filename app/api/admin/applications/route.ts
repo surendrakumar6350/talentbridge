@@ -31,8 +31,21 @@ export async function GET(request: NextRequest) {
     const role = (user as { role?: string } | null)?.role;
     if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    // Fetch raw applications and then attach internship/applicant info
-    const appsRaw = await Application.find().lean();
+  // Check query params for ordering
+  const url = new URL(request.url);
+  const order = url.searchParams.get("order") || null; // 'asc' | 'desc'
+  const reverse = url.searchParams.get("reverse") === "true";
+
+  // Fetch raw applications and then attach internship/applicant info
+  // Support sorting by createdAt desc when requested (reverse=true or order=desc)
+  const shouldReverse = reverse || order === "desc";
+  let appsRaw: Array<Record<string, unknown>>;
+  if (shouldReverse) {
+    // use array-style sort to satisfy mongoose typings without casts
+    appsRaw = await Application.find().sort([["createdAt", -1]]).lean();
+  } else {
+    appsRaw = await Application.find().lean();
+  }
 
     // Collect internship and applicant ids
     const internshipIds = Array.from(
