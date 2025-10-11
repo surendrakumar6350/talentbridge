@@ -104,39 +104,67 @@ export default function InternshipsPage() {
         {error && <div className="text-red-500 mb-4">{error}</div>}
 
         <div className="flex flex-col gap-6">
-          {loading && <div>Loading...</div>}
-          {!loading && internships.map((it) => (
-            <Card key={it._id || it.title}>
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <Badge variant="secondary">{it.skillsRequired?.[0] ?? "Role"}</Badge>
-                      <Badge variant="outline">{it.location ?? "Remote"}</Badge>
-                    </div>
-                    <h2 className="text-xl font-semibold">{it.title}</h2>
-                    <p className="text-muted-foreground text-sm mt-1">{it.company}</p>
-                    <div className="mt-3">
-                      <p className="text-sm">{it.description}</p>
-                      {it.stipend && <p className="mt-2"><span className="font-medium">Stipend:</span> {it.stipend}</p>}
+          {loading ? (
+            // skeleton list: show 4 placeholders that match Card layout
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={`skeleton-${i}`}>
+                <CardContent className="p-6">
+                  <div className="animate-pulse">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="h-6 w-16 bg-muted/30 rounded" />
+                          <div className="h-6 w-12 bg-muted/30 rounded" />
+                        </div>
+                        <div className="h-6 w-3/4 bg-muted/30 rounded mb-2" />
+                        <div className="h-4 w-1/3 bg-muted/30 rounded mb-3" />
+                        <div className="space-y-2">
+                          <div className="h-3 bg-muted/30 rounded" />
+                          <div className="h-3 bg-muted/30 rounded w-5/6" />
+                        </div>
+                      </div>
+                      <div className="mt-4 md:mt-0">
+                        <div className="h-10 w-28 bg-muted/30 rounded" />
+                      </div>
                     </div>
                   </div>
-                  {appliedIds.has(it._id || "") ? (
-                    // show status badge when available
-                    applicationStatusMap[it._id || ""] ? (
-                      <Badge variant={applicationStatusMap[it._id || ""] === "accepted" ? "secondary" : applicationStatusMap[it._id || ""] === "rejected" ? "destructive" : "outline"} className="whitespace-nowrap">
-                        {applicationStatusMap[it._id || ""]}
-                      </Badge>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            internships.map((it) => (
+              <Card key={it._id || it.title}>
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <Badge variant="secondary">{it.skillsRequired?.[0] ?? "Role"}</Badge>
+                        <Badge variant="outline">{it.location ?? "Remote"}</Badge>
+                      </div>
+                      <h2 className="text-xl font-semibold">{it.title}</h2>
+                      <p className="text-muted-foreground text-sm mt-1">{it.company}</p>
+                      <div className="mt-3">
+                        <p className="text-sm">{it.description}</p>
+                        {it.stipend && <p className="mt-2"><span className="font-medium">Stipend:</span> {it.stipend}</p>}
+                      </div>
+                    </div>
+                    {appliedIds.has(it._id || "") ? (
+                      // show status badge when available
+                      applicationStatusMap[it._id || ""] ? (
+                        <Badge variant={applicationStatusMap[it._id || ""] === "accepted" ? "secondary" : applicationStatusMap[it._id || ""] === "rejected" ? "destructive" : "outline"} className="whitespace-nowrap">
+                          {applicationStatusMap[it._id || ""]}
+                        </Badge>
+                      ) : (
+                        <Button className="whitespace-nowrap" disabled>Applied</Button>
+                      )
                     ) : (
-                      <Button className="whitespace-nowrap" disabled>Applied</Button>
-                    )
-                  ) : (
-                    <Button className="whitespace-nowrap" onClick={() => setApplyingTo(it._id || null)}>Apply Now</Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                      <Button className="whitespace-nowrap" onClick={() => setApplyingTo(it._id || null)}>Apply Now</Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
           {applyingTo && (
             <ApplyModal internshipId={applyingTo} onClose={() => setApplyingTo(null)} onSuccess={() => {
               // refresh list

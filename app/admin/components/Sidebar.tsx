@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Home, Briefcase, Users, FileText } from "lucide-react";
+import { Home, Briefcase, Users, FileText, Menu as MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/LoginDialog";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,10 +19,11 @@ const items = [
   { href: "/admin/users", label: "Users", icon: Users },
 ];
 
-function NavItem({ href, label, Icon, active }: { href: string; label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; active?: boolean }) {
+function NavItem({ href, label, Icon, active, onClick }: { href: string; label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; active?: boolean; onClick?: () => void }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={"flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-accent hover:text-accent-foreground " + (active ? "bg-accent/60 font-medium" : "")}
     >
       <Icon className="size-4 opacity-80" />
@@ -33,6 +34,7 @@ function NavItem({ href, label, Icon, active }: { href: string; label: string; I
 
 export function AdminSidebar() {
   const [open, setOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { user, authChecked, logout } = useAuth();
   const pathname = usePathname();
 
@@ -54,18 +56,18 @@ export function AdminSidebar() {
 
       <nav className="flex flex-col gap-1">
         {items.map((it) => (
-          <NavItem key={it.href} href={it.href} label={it.label} Icon={it.icon} active={pathname === it.href} />
+          <NavItem key={it.href} href={it.href} label={it.label} Icon={it.icon} active={pathname === it.href} onClick={() => setSheetOpen(false)} />
         ))}
       </nav>
 
       <div className="mt-4 border-t border-border pt-4 flex flex-col gap-2">
         {authChecked ? (
           user ? (
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full overflow-hidden">
-                  <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={40} height={40} className="object-cover" unoptimized />
-                </div>
-                <div className="flex-1 flex flex-col">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-full overflow-hidden">
+                <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={40} height={40} className="object-cover" unoptimized />
+              </div>
+              <div className="flex-1 flex flex-col">
                 <div>
                   <div className="text-sm font-medium">{user.name}</div>
                   <div className="text-xs text-muted-foreground">{user.email}</div>
@@ -77,7 +79,7 @@ export function AdminSidebar() {
               </div>
             </div>
           ) : (
-            <Button variant="outline" onClick={() => setOpen(true)}>Admin Login</Button>
+            <Button variant="outline" onClick={() => { setOpen(true); setSheetOpen(false); }}>Admin Login</Button>
           )
         ) : (
           <div className="h-10 w-full bg-muted/30 animate-pulse rounded" />
@@ -90,12 +92,12 @@ export function AdminSidebar() {
           user ? (
             <div className="pt-2 flex flex-col gap-2">
               <ThemeToggle variant="outline" size="sm" />
-              <Button variant="outline" onClick={handleLogout} className="w-full">Logout</Button>
+              <Button variant="outline" onClick={() => { handleLogout(); setSheetOpen(false); }} className="w-full">Logout</Button>
             </div>
           ) : (
             <div className="pt-2 flex flex-col gap-2">
               <ThemeToggle variant="outline" size="sm" />
-              <Button variant="outline" onClick={() => setOpen(true)} className="w-full">Login</Button>
+              <Button variant="outline" onClick={() => { setOpen(true); setSheetOpen(false); }} className="w-full">Login</Button>
             </div>
           )
         ) : null}
@@ -113,17 +115,41 @@ export function AdminSidebar() {
       {/* Mobile: header with Sheet menu */}
       <div className="md:hidden border-b border-border bg-background">
         <div className="flex items-center justify-between p-3">
-          <div className="flex items-center gap-2">
+          {/* left: fixed-width slot for menu trigger so center title is stable during hydration */}
+          <div className="w-10 flex items-center justify-start">
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetTrigger>
+                <Button variant="ghost" size="sm" aria-label="Open menu">
+                  <MenuIcon className="size-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                {menu}
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* center: title */}
+          <div className="flex-1 flex items-center justify-center">
             <div className="font-semibold">Admin</div>
           </div>
-          <Sheet>
-            <SheetTrigger>
-              <Button variant="ghost" size="sm">Menu</Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-              {menu}
-            </SheetContent>
-          </Sheet>
+
+          {/* right: avatar or login button to balance left slot */}
+          <div className="w-10 flex items-center justify-end">
+            {authChecked ? (
+              user ? (
+                <Link href="/admin" aria-label="Profile">
+                  <div className="h-8 w-8 rounded-full overflow-hidden">
+                    <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={32} height={32} className="object-cover" unoptimized />
+                  </div>
+                </Link>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={() => { setOpen(true); setSheetOpen(false); }} aria-label="Login">Login</Button>
+              )
+            ) : (
+              <div className="h-8 w-8 bg-muted/30 rounded" />
+            )}
+          </div>
         </div>
       </div>
 

@@ -25,6 +25,11 @@ export function Header() {
       if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) setAvatarMenu(false);
     }
     document.addEventListener('click', onDoc);
+    // listen for global request to open login dialog (e.g., after auth guard)
+    function onOpenLogin() {
+      setOpen(true);
+    }
+    window.addEventListener('open-login', onOpenLogin as EventListener);
     return () => document.removeEventListener('click', onDoc);
   }, []);
 
