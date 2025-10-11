@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDb } from "@/dbConnection/connect";
 import { Internship } from "@/dbConnection/Schema/internship";
 
-export async function GET() {
+export async function POST() {
   await connectDb();
 
   const mocks = [

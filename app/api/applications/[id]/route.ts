@@ -25,7 +25,8 @@ async function getUserFromRequest(req: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } | Promise<{ id: string }>; }) {
   await connectDb();
-  const idParam = (params as unknown as { id?: string })?.id;
+  const resolvedParams = (await params) as { id?: string };
+  const idParam = resolvedParams?.id;
   if (!idParam) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   try {
@@ -45,7 +46,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const role = (user as { role?: string } | null)?.role;
   if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const idParam = (params as unknown as { id?: string })?.id;
+  const resolvedParams = (await params) as { id?: string };
+  const idParam = resolvedParams?.id;
   if (!idParam) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   const body = await request.json().catch(() => null);
