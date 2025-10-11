@@ -58,11 +58,11 @@ export async function GET(request: NextRequest) {
 
   try {
     // Admins can fetch all applications, users only their own
-    const role = (user as { role?: string } | null)?.role;
-    if (role === "admin") {
-      const apps = await Application.find().populate("internship").populate("applicant").lean();
-      return NextResponse.json({ applications: apps });
-    }
+    // const role = (user as { role?: string } | null)?.role;
+    // if (role === "admin") {
+    //   const apps = await Application.find().populate("internship").populate("applicant").lean();
+    //   return NextResponse.json({ applications: apps });
+    // }
 
   const typedUser = user as { _id?: string };
   const apps = await Application.find({ applicant: typedUser._id }).populate("internship").lean();
