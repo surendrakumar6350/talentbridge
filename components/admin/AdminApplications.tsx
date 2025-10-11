@@ -22,12 +22,13 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatingIds, setUpdatingIds] = useState<Record<string, boolean>>({});
 
   async function fetchApplications() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/applications");
+  const res = await fetch("/api/admin/applications");
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) throw new Error("Unauthorized: admin access required");
         throw new Error("Failed to fetch applications");
@@ -44,6 +45,41 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
   useEffect(() => {
     fetchApplications();
   }, []);
+
+  async function updateStatus(id: string, status: "pending" | "accepted" | "rejected") {
+    if (!id) return;
+    setError(null);
+    setUpdatingIds((s) => ({ ...s, [id]: true }));
+    // optimistic update
+    const prev = applications;
+    setApplications((cur) => cur.map((c) => (c._id === id ? { ...c, status } : c)));
+    try {
+      const res = await fetch(`/api/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || "Failed to update status");
+      }
+      const j = await res.json();
+      // ensure we sync with server response if provided
+      if (j?.application) {
+        setApplications((cur) => cur.map((c) => (c._id === id ? j.application : c)));
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+      // rollback
+      setApplications(prev);
+    } finally {
+      setUpdatingIds((s) => {
+        const next = { ...s };
+        delete next[id];
+        return next;
+      });
+    }
+  }
 
   function groupByInternship(apps: Application[]) {
     const map = new Map<string, { internship: Internship | null; apps: Application[] }>();
@@ -88,6 +124,25 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
                     {a.resumeLink && (
                       <a href={a.resumeLink} target="_blank" rel="noreferrer" className="text-xs underline">Resume</a>
                     )}
+                    {/* Status actions for admin: only show on admin pages (this component is used for admin) */}
+                    <div className="flex items-center gap-1">
+                      {a.status !== "accepted" && (
+                        <button
+                          className="text-xs px-2 py-1 rounded-md bg-green-600 text-white hover:bg-green-700"
+                          onClick={async () => await updateStatus(a._id!, "accepted")}
+                        >
+                          Accept
+                        </button>
+                      )}
+                      {a.status !== "rejected" && (
+                        <button
+                          className="text-xs px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700"
+                          onClick={async () => await updateStatus(a._id!, "rejected")}
+                        >
+                          Reject
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
