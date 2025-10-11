@@ -41,7 +41,10 @@ export default function CompaniesPage() {
                   <Users className="h-4 w-4" />
                   {i * 50}-{i * 100} employees
                 </div>
-                <Button className="w-full">View Openings</Button>
+                {/* Openings temporarily hidden — re-enable when feature is ready */}
+                <Button className="w-full" disabled>
+                  Openings hidden
+                </Button>
               </CardContent>
             </Card>
           ))}
