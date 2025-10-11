@@ -22,13 +22,13 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [updatingIds, setUpdatingIds] = useState<Record<string, boolean>>({});
+  const [updatingActions, setUpdatingActions] = useState<Record<string, "accept" | "reject" | "pending">>({});
 
   async function fetchApplications() {
     setLoading(true);
     setError(null);
     try {
-  const res = await fetch("/api/admin/applications");
+  const res = await fetch("/api/admin/applications?order=desc");
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) throw new Error("Unauthorized: admin access required");
         throw new Error("Failed to fetch applications");
@@ -49,7 +49,8 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
   async function updateStatus(id: string, status: "pending" | "accepted" | "rejected") {
     if (!id) return;
     setError(null);
-    setUpdatingIds((s) => ({ ...s, [id]: true }));
+  const action = status === "accepted" ? "accept" : status === "rejected" ? "reject" : "pending";
+  setUpdatingActions((s) => ({ ...s, [id]: action }));
     // optimistic update
     const prev = applications;
     setApplications((cur) => cur.map((c) => (c._id === id ? { ...c, status } : c)));
@@ -73,7 +74,7 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
       // rollback
       setApplications(prev);
     } finally {
-      setUpdatingIds((s) => {
+      setUpdatingActions((s) => {
         const next = { ...s };
         delete next[id];
         return next;
@@ -100,8 +101,8 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
 
   return (
     <div className="grid gap-4">
-      {groups.map((g, idx) => (
-        <Card key={idx}>
+      {groups.map((g) => (
+        <Card key={g.internship?._id ?? `group-${String(g.internship?.title ?? "unknown")}`}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div>
@@ -113,39 +114,66 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {g.apps.slice(0, preview ? 3 : 50).map((a) => (
-                <div key={a._id} className="flex items-center justify-between gap-4 border-t pt-2">
-                  <div>
-                    <div className="text-sm font-medium">{a.name || a.email}</div>
-                    <div className="text-xs text-muted-foreground">{a.email}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={a.status === "accepted" ? "secondary" : a.status === "rejected" ? "destructive" : "outline"}>{a.status ?? "pending"}</Badge>
-                    {a.resumeLink && (
-                      <a href={a.resumeLink} target="_blank" rel="noreferrer" className="text-xs underline">Resume</a>
-                    )}
-                    {/* Status actions for admin: only show on admin pages (this component is used for admin) */}
-                    <div className="flex items-center gap-1">
-                      {a.status !== "accepted" && (
-                        <button
-                          className="text-xs px-2 py-1 rounded-md bg-green-600 text-white hover:bg-green-700"
-                          onClick={async () => await updateStatus(a._id!, "accepted")}
-                        >
-                          Accept
-                        </button>
-                      )}
-                      {a.status !== "rejected" && (
-                        <button
-                          className="text-xs px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700"
-                          onClick={async () => await updateStatus(a._id!, "rejected")}
-                        >
-                          Reject
-                        </button>
-                      )}
+              {g.apps.slice(0, preview ? 3 : 50).map((a) => {
+                const appId = a._id;
+                const key = appId ?? `${a.email ?? a.name ?? Math.random()}`;
+                return (
+                  <div key={key} className="border-t pt-2">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium">{a.name || a.email}</div>
+                        <div className="text-xs text-muted-foreground">{a.email}</div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 md:gap-2 items-start">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={a.status === "accepted" ? "secondary" : a.status === "rejected" ? "destructive" : "outline"}>{a.status ?? "pending"}</Badge>
+                          {a.resumeLink && (
+                            <a href={a.resumeLink} target="_blank" rel="noreferrer" className="text-xs underline">Resume</a>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:gap-2 mt-2 sm:mt-0 w-full sm:w-auto">
+                          {appId && a.status !== "accepted" && (
+                            <button
+                              className="w-full sm:w-auto text-xs px-2 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                              onClick={async () => await updateStatus(appId, "accepted")}
+                              disabled={Boolean(updatingActions[appId])}
+                              aria-disabled={Boolean(updatingActions[appId])}
+                            >
+                                {updatingActions[appId] === "accept" ? (
+                                  <span className="inline-flex items-center gap-2">
+                                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>Accepting</span>
+                                  </span>
+                                ) : (
+                                  "Accept"
+                                )}
+                            </button>
+                          )}
+                          {appId && a.status !== "rejected" && (
+                            <button
+                              className="w-full sm:w-auto text-xs px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                              onClick={async () => await updateStatus(appId, "rejected")}
+                              disabled={Boolean(updatingActions[appId])}
+                              aria-disabled={Boolean(updatingActions[appId])}
+                            >
+                              {updatingActions[appId] === "reject" ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  <span>Rejecting</span>
+                                </span>
+                              ) : (
+                                "Reject"
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
