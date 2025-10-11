@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 type User = { _id?: string; name: string; email: string; role?: string; image?: string; createdAt?: string };
@@ -44,7 +45,9 @@ export default function AdminUsersPage() {
           <Card key={u._id || u.email}>
             <CardContent className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <img src={u.image || "/icon.png"} alt={u.name} className="h-10 w-10 rounded-full" />
+                <div className="h-10 w-10 rounded-full overflow-hidden">
+                  <Image src={u.image || "/icon.png"} alt={u.name || 'avatar'} width={40} height={40} className="object-cover" unoptimized />
+                </div>
                 <div>
                   <div className="font-medium">{u.name}</div>
                   <div className="text-sm text-muted-foreground">{u.email}</div>
