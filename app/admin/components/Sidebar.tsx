@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Home, Briefcase, Users, FileText, Menu as MenuIcon, LogOut } from "lucide-react";
+import { Home, Briefcase, Users, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoginDialog } from "@/components/LoginDialog";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -45,7 +46,9 @@ export function AdminSidebar() {
         <div className="font-semibold text-lg">Admin</div>
         {/* desktop only spacer for avatar */}
         {authChecked && user && (
-          <img src={user.image || '/icon.png'} alt={user.name} className="hidden md:block h-8 w-8 rounded-full" />
+          <div className="hidden md:block h-8 w-8 rounded-full overflow-hidden">
+            <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={32} height={32} className="object-cover" unoptimized />
+          </div>
         )}
       </div>
 
@@ -58,9 +61,11 @@ export function AdminSidebar() {
       <div className="mt-4 border-t border-border pt-4 flex flex-col gap-2">
         {authChecked ? (
           user ? (
-            <div className="flex items-start gap-3">
-              <img src={user.image || '/icon.png'} alt={user.name} className="h-10 w-10 rounded-full" />
-              <div className="flex-1 flex flex-col">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-full overflow-hidden">
+                  <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={40} height={40} className="object-cover" unoptimized />
+                </div>
+                <div className="flex-1 flex flex-col">
                 <div>
                   <div className="text-sm font-medium">{user.name}</div>
                   <div className="text-xs text-muted-foreground">{user.email}</div>
@@ -109,7 +114,6 @@ export function AdminSidebar() {
       <div className="md:hidden border-b border-border bg-background">
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-2">
-            <MenuIcon />
             <div className="font-semibold">Admin</div>
           </div>
           <Sheet>
