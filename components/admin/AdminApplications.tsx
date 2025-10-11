@@ -95,7 +95,42 @@ export function AdminApplications({ preview = false }: { preview?: boolean }) {
 
   const groups = groupByInternship(preview ? applications.slice(0, 12) : applications);
 
-  if (loading) return <div>Loading applications…</div>;
+  if (loading)
+    return (
+      <div className="grid gap-4">
+        {Array.from({ length: 3 }).map((_, gi) => (
+          <Card key={`apps-skel-${gi}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div>
+                  <div className="h-4 bg-muted/20 rounded w-48 mb-2 animate-pulse" />
+                  <div className="h-3 bg-muted/10 rounded w-32 animate-pulse" />
+                </div>
+                <div className="h-3 bg-muted/10 rounded w-8 animate-pulse" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={`a-skel-${gi}-${i}`} className="border-t pt-3">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <div className="h-4 bg-muted/20 rounded w-32 mb-1 animate-pulse" />
+                        <div className="h-3 bg-muted/10 rounded w-24 animate-pulse" />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="h-6 w-16 bg-muted/10 rounded animate-pulse" />
+                        <div className="h-6 w-12 bg-muted/10 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
   if (error) return <div className="text-sm text-red-600">{error}</div>;
   if (groups.length === 0) return <div className="text-sm text-muted-foreground">No applications found.</div>;
 
