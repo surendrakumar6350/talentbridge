@@ -8,8 +8,7 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { Menu } from "lucide-react";
-
-type User = { id: string; name: string; email: string; role: string; image?: string } | null;
+import Image from "next/image";
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -51,7 +50,9 @@ export function Header() {
             {authChecked ? (user ? (
               <div className="relative" ref={avatarRef}>
                 <button onClick={() => setAvatarMenu((s) => !s)} className="p-1">
-                  <img src={user.image || '/icon.png'} alt={user.name} className="h-8 w-8 rounded-full" />
+                  <div className="h-8 w-8 rounded-full overflow-hidden">
+                    <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={32} height={32} className="object-cover" unoptimized />
+                  </div>
                 </button>
                 {avatarMenu && (
                   <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded shadow p-2">
@@ -83,7 +84,9 @@ export function Header() {
             {authChecked ? (user ? (
               <div className="relative" ref={avatarRef}>
                 <button onClick={() => setAvatarMenu((s) => !s)} className="p-1">
-                  <img src={user.image || '/icon.png'} alt={user.name} className="h-8 w-8 rounded-full" />
+                  <div className="h-8 w-8 rounded-full overflow-hidden">
+                    <Image src={user.image || '/icon.png'} alt={user.name || 'avatar'} width={32} height={32} className="object-cover" unoptimized />
+                  </div>
                 </button>
                 {avatarMenu && (
                   <div className="absolute right-0 mt-2 w-40 bg-card border border-border rounded shadow p-2">
