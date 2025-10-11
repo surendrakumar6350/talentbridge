@@ -20,6 +20,7 @@ type Internship = {
 type Application = {
   _id?: string;
   internship?: { _id?: string } | string;
+  status?: string;
 };
 
 export default function InternshipsPage() {
@@ -27,32 +28,34 @@ export default function InternshipsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const [applicationStatusMap, setApplicationStatusMap] = useState<Record<string, string>>({});
 
   // Simple create form state
-  const [showForm, setShowForm] = useState(false);
   const [applyingTo, setApplyingTo] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
-  const [company, setCompany] = useState("");
-  const [description, setDescription] = useState("");
 
   const fetchUserApplications = useCallback(async () => {
     try {
       const res = await fetch("/api/applications");
       if (!res.ok) {
         setAppliedIds(new Set());
+        setApplicationStatusMap({});
         return;
       }
       const j = await res.json();
       const apps: Application[] = j.applications || [];
       const ids = new Set<string>();
+      const statusMap: Record<string, string> = {};
       for (const a of apps) {
         const internship = a.internship;
         const id = internship && typeof internship === "object" ? internship._id : internship;
         if (id) ids.add(String(id));
+        if (id && a.status) statusMap[String(id)] = a.status;
       }
       setAppliedIds(ids);
+      setApplicationStatusMap(statusMap);
     } catch {
       setAppliedIds(new Set());
+      setApplicationStatusMap({});
     }
   }, []);
 
@@ -81,39 +84,7 @@ export default function InternshipsPage() {
     fetchInternships();
   }, [fetchInternships]);
 
-  async function seed() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/seed/internships", { method: "POST" });
-      if (!res.ok) throw new Error("Seed failed");
-      await fetchInternships();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function createInternship(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const payload = { title, company, description };
-      const res = await fetch("/api/internships", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error("Create failed");
-      setTitle("");
-      setCompany("");
-      setDescription("");
-      setShowForm(false);
-      await fetchInternships();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // (Seed and create actions moved to admin.)
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -125,21 +96,10 @@ export default function InternshipsPage() {
             <p className="text-muted-foreground">Browse and apply for opportunities that match your skills</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={seed} disabled={loading}>Seed Data</Button>
-            <Button variant="outline" onClick={() => setShowForm((s) => !s)}>{showForm ? "Cancel" : "Add Internship"}</Button>
+            {/* Seed / Add controls moved to admin panel */}
           </div>
         </div>
-
-        {showForm && (
-          <form onSubmit={createInternship} className="mb-6 grid gap-2 sm:grid-cols-3">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="input" />
-            <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company" className="input" />
-            <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description" className="input" />
-            <div className="sm:col-span-3">
-              <Button type="submit" disabled={loading}>Create</Button>
-            </div>
-          </form>
-        )}
+        {/* form moved to admin management UI */}
 
         {error && <div className="text-red-500 mb-4">{error}</div>}
 
@@ -162,7 +122,14 @@ export default function InternshipsPage() {
                     </div>
                   </div>
                   {appliedIds.has(it._id || "") ? (
-                    <Button className="whitespace-nowrap" disabled>Applied</Button>
+                    // show status badge when available
+                    applicationStatusMap[it._id || ""] ? (
+                      <Badge variant={applicationStatusMap[it._id || ""] === "accepted" ? "secondary" : applicationStatusMap[it._id || ""] === "rejected" ? "destructive" : "outline"} className="whitespace-nowrap">
+                        {applicationStatusMap[it._id || ""]}
+                      </Badge>
+                    ) : (
+                      <Button className="whitespace-nowrap" disabled>Applied</Button>
+                    )
                   ) : (
                     <Button className="whitespace-nowrap" onClick={() => setApplyingTo(it._id || null)}>Apply Now</Button>
                   )}
