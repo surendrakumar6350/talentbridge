@@ -82,15 +82,26 @@ export default function InternshipsPage() {
       const data = await res.json();
       const raw = data.data || [];
       // sanitize incoming objects to only known fields so we don't surface backend internals
-      const safe = raw.map((it: any) => ({
-        _id: it._id,
-        title: it.title,
-        company: it.company,
-        description: it.description,
-        location: it.location,
-        stipend: it.stipend,
-        skillsRequired: it.skillsRequired || [],
-      }));
+      const safe = raw.map((it: unknown) => {
+        const obj = it as Record<string, unknown>;
+        const skillsField = obj["skillsRequired"];
+        const skillsArr = Array.isArray(skillsField)
+          ? (skillsField as unknown[]).filter((s) => typeof s === "string") as string[]
+          : [];
+
+        const stipendField = obj["stipend"];
+        const stipendStr = typeof stipendField === "string" ? stipendField : (stipendField != null ? String(stipendField) : undefined);
+
+        return {
+          _id: obj["_id"] as string | undefined,
+          title: typeof obj["title"] === "string" ? obj["title"] as string : String(obj["title"] ?? ""),
+          company: typeof obj["company"] === "string" ? obj["company"] as string : String(obj["company"] ?? ""),
+          description: typeof obj["description"] === "string" ? obj["description"] as string : String(obj["description"] ?? ""),
+          location: typeof obj["location"] === "string" ? obj["location"] as string : undefined,
+          stipend: stipendStr,
+          skillsRequired: skillsArr,
+        } as Internship;
+      });
       setInternships(safe);
       // After fetching internships, refresh user's applications so we can mark applied ones
       await fetchUserApplications();
@@ -114,7 +125,6 @@ export default function InternshipsPage() {
     };
 
   const min = stipendMin ? Number(stipendMin) : null;
-  const max = null;
 
     return internships.filter((it) => {
       // title / company search
