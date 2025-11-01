@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Briefcase, GraduationCap, Building } from "lucide-react";
+import { ArrowRight, Briefcase, GraduationCap, Building, Search, FileCheck, Trophy, CheckCircle } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Header } from "@/components/header";
 import ApplyModal from "@/components/ApplyModal";
-// note: no search input here — single CTA only per design
 
 type Internship = {
   _id?: string;
@@ -68,7 +69,6 @@ export default function Home() {
       if (!res.ok) throw new Error("Failed to fetch featured internships");
       const data = await res.json();
       setFeatured(data.data || []);
-      // After fetching featured internships, refresh user's applications so we can mark applied ones
       await fetchUserApplications();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -169,8 +169,123 @@ export default function Home() {
         </Card>
       </section>
 
-  {/* Featured Internships */}
-  <section className="bg-background py-12">
+      {/* Explore & Highlights */}
+      <section className="container mx-auto px-6 py-6">
+        {/* Explore by skills (responsive, scrollable on mobile) */}
+        <div className="mb-8">
+          <h3 className="text-2xl font-semibold mb-3">Explore by skills</h3>
+          <p className="text-sm text-muted-foreground mb-4">Quickly jump into internships that match your top skills.</p>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {[
+              "React",
+              "Node.js",
+              "Python",
+              "Data Science",
+              "UI/UX",
+              "Product",
+              "Marketing",
+              "Go",
+            ].map((s) => (
+              <Badge key={s} className="whitespace-nowrap px-3 py-2" variant="outline">{s}</Badge>
+            ))}
+          </div>
+        </div>
+
+        {/* Top categories */}
+        <div className="mb-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { title: "Software", count: "640+", icon: Briefcase },
+            { title: "Design", count: "230+", icon: GraduationCap },
+            { title: "Business", count: "180+", icon: Building },
+            { title: "Data", count: "120+", icon: Briefcase },
+          ].map((c) => (
+            <Card key={c.title} className="hover:shadow-lg transition">
+              <CardContent className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+                  <c.icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="font-semibold">{c.title}</div>
+                  <div className="text-sm text-muted-foreground">{c.count} opportunities</div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* How it works (simple three-step) */}
+        <div className="mb-10">
+          <h3 className="text-2xl font-semibold mb-4">How it works</h3>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card className="p-4 text-center">
+              <CardContent>
+                <div className="mx-auto h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-3">
+                  <Search className="h-6 w-6" />
+                </div>
+                <div className="font-semibold">Discover</div>
+                <div className="text-sm text-muted-foreground">Search curated internships tailored for your skills.</div>
+              </CardContent>
+            </Card>
+            <Card className="p-4 text-center">
+              <CardContent>
+                <div className="mx-auto h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-3">
+                  <FileCheck className="h-6 w-6" />
+                </div>
+                <div className="font-semibold">Apply</div>
+                <div className="text-sm text-muted-foreground">One-click applications with resume and status tracking.</div>
+              </CardContent>
+            </Card>
+            <Card className="p-4 text-center">
+              <CardContent>
+                <div className="mx-auto h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-3">
+                  <Trophy className="h-6 w-6" />
+                </div>
+                <div className="font-semibold">Succeed</div>
+                <div className="text-sm text-muted-foreground">Get offers and kickstart your career with real experience.</div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Testimonials */}
+        <div className="mb-10">
+          <h3 className="text-2xl font-semibold mb-4">What students say</h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { quote: "Found my dream internship in weeks!", name: "Asha R.", role: "Frontend Intern" },
+              { quote: "Excellent listings and fast responses.", name: "Karan P.", role: "Data Intern" },
+              { quote: "Great support from the team.", name: "Maya S.", role: "Product Intern" },
+            ].map((t) => (
+              <Card key={t.name} className="hover:shadow-md transition">
+                <CardContent>
+                  <p className="italic text-sm">&ldquo;{t.quote}&rdquo;</p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">{t.name.split(' ').map(n => n[0]).join('')}</div>
+                    <div>
+                      <div className="font-semibold">{t.name}</div>
+                      <div className="text-sm text-muted-foreground">{t.role}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Trusted companies */}
+        <div className="mb-12">
+          <h3 className="text-2xl font-semibold mb-3">Trusted by top companies</h3>
+          <p className="text-sm text-muted-foreground mb-4">Companies hiring through TalentBridge.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {['Acme Corp', 'Nimbus', 'Stellar', 'ByteLabs', 'OpenWave', 'Summit'].map((n) => (
+              <div key={n} className="rounded-lg border bg-card/60 p-3 flex items-center justify-center text-sm font-medium">{n}</div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Internships */}
+      <section className="bg-background py-10">
         <div className="container mx-auto px-6">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-semibold">Featured Opportunities</h2>
@@ -241,13 +356,24 @@ export default function Home() {
 
 function HeroActions() {
   return (
-    <div className="mt-8 flex w-full items-center">
-      <Button className="shadow-lg transform transition hover:-translate-y-0.5" size="lg" asChild>
-        <Link href="/internships" aria-label="Browse Opportunities" className="inline-flex items-center gap-3 px-6 py-3">
-          Browse Opportunities
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </Button>
+    <div className="mt-8 w-full">
+      <form onSubmit={(e) => e.preventDefault()} className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex gap-3">
+          <Button asChild size="lg">
+            <Link href="/internships" className="inline-flex items-center gap-2 px-4 py-3">
+              Browse Opportunities
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="lg" className="hidden sm:inline-flex">For Employers</Button>
+        </div>
+      </form>
+
+      <div className="mt-4 flex flex-wrap gap-3 text-sm text-muted-foreground">
+        <div className="inline-flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Free to use</div>
+        <div className="inline-flex items-center gap-2"><Briefcase className="h-4 w-4 text-primary" /> Curated roles</div>
+        <div className="inline-flex items-center gap-2"><GraduationCap className="h-4 w-4 text-primary" /> Career resources</div>
+      </div>
     </div>
   );
 }
