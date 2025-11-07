@@ -5,22 +5,22 @@ import { Building, Globe, Users, MapPin } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function CompaniesPage() {
-  const companies = [
-    { name: "TechCorp Solutions", industry: "Technology", location: "Bangalore", employees: "100-200" },
-    { name: "InnovateTech", industry: "Software Development", location: "Mumbai", employees: "50-150" },
-    { name: "DevWorks Inc", industry: "IT Services", location: "Delhi", employees: "200-500" },
-    { name: "GreenEnergy Labs", industry: "Renewable Energy", location: "Pune", employees: "75-125" },
-    { name: "FinEdge Analytics", industry: "Financial Technology", location: "Hyderabad", employees: "150-300" },
-    { name: "HealthSync", industry: "Healthcare Technology", location: "Chennai", employees: "300-600" },
-    { name: "CloudNova", industry: "Cloud Computing", location: "Remote", employees: "500-1000" },
-    { name: "AeroDynamics", industry: "Aerospace Engineering", location: "Bangalore", employees: "250-400" },
-    { name: "UrbanSpaces", industry: "Real Estate", location: "Gurgaon", employees: "100-250" },
-    { name: "DataForge", industry: "Data Analytics", location: "Mumbai", employees: "400-800" },
-    { name: "BrightMedia", industry: "Digital Media", location: "Noida", employees: "80-180" },
-    { name: "QuantumLeap", industry: "Quantum Computing", location: "Bangalore", employees: "600-1200" },
-  ];
+const companies = [
+  { name: "TechCorp Solutions", industry: "Technology", location: "Bangalore", employees: "100-200" },
+  { name: "InnovateTech", industry: "Software Development", location: "Mumbai", employees: "50-150" },
+  { name: "DevWorks Inc", industry: "IT Services", location: "Delhi", employees: "200-500" },
+  { name: "GreenEnergy Labs", industry: "Renewable Energy", location: "Pune", employees: "75-125" },
+  { name: "FinEdge Analytics", industry: "Financial Technology", location: "Hyderabad", employees: "150-300" },
+  { name: "HealthSync", industry: "Healthcare Technology", location: "Chennai", employees: "300-600" },
+  { name: "CloudNova", industry: "Cloud Computing", location: "Remote", employees: "500-1000" },
+  { name: "AeroDynamics", industry: "Aerospace Engineering", location: "Bangalore", employees: "250-400" },
+  { name: "UrbanSpaces", industry: "Real Estate", location: "Gurgaon", employees: "100-250" },
+  { name: "DataForge", industry: "Data Analytics", location: "Mumbai", employees: "400-800" },
+  { name: "BrightMedia", industry: "Digital Media", location: "Noida", employees: "80-180" },
+  { name: "QuantumLeap", industry: "Quantum Computing", location: "Bangalore", employees: "600-1200" },
+];
 
+export default function CompaniesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
