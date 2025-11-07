@@ -6,6 +6,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 
 export default function CompaniesPage() {
+  const companies = [
+    { name: "TechCorp Solutions", industry: "Technology", location: "Bangalore", employees: "100-200" },
+    { name: "InnovateTech", industry: "Software Development", location: "Mumbai", employees: "50-150" },
+    { name: "DevWorks Inc", industry: "IT Services", location: "Delhi", employees: "200-500" },
+    { name: "GreenEnergy Labs", industry: "Renewable Energy", location: "Pune", employees: "75-125" },
+    { name: "FinEdge Analytics", industry: "Financial Technology", location: "Hyderabad", employees: "150-300" },
+    { name: "HealthSync", industry: "Healthcare Technology", location: "Chennai", employees: "300-600" },
+    { name: "CloudNova", industry: "Cloud Computing", location: "Remote", employees: "500-1000" },
+    { name: "AeroDynamics", industry: "Aerospace Engineering", location: "Bangalore", employees: "250-400" },
+    { name: "UrbanSpaces", industry: "Real Estate", location: "Gurgaon", employees: "100-250" },
+    { name: "DataForge", industry: "Data Analytics", location: "Mumbai", employees: "400-800" },
+    { name: "BrightMedia", industry: "Digital Media", location: "Noida", employees: "80-180" },
+    { name: "QuantumLeap", industry: "Quantum Computing", location: "Bangalore", employees: "600-1200" },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
@@ -16,72 +31,26 @@ export default function CompaniesPage() {
         </div>
         
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+          {companies.map((company, i) => (
             <Card key={i}>
               <CardHeader className="pb-3">
                 <div className="h-14 w-14 rounded-md bg-primary/20 flex items-center justify-center mb-2">
                   <Building className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle>{
-                  i === 1 ? "TechCorp Solutions" : 
-                  i === 2 ? "InnovateTech" : 
-                  i === 3 ? "DevWorks Inc" :
-                  i === 4 ? "GreenEnergy Labs" :
-                  i === 5 ? "FinEdge Analytics" :
-                  i === 6 ? "HealthSync" :
-                  i === 7 ? "CloudNova" :
-                  i === 8 ? "AeroDynamics" :
-                  i === 9 ? "UrbanSpaces" :
-                  i === 10 ? "DataForge" :
-                  i === 11 ? "BrightMedia" :
-                  "QuantumLeap"
-                }</CardTitle>
+                <CardTitle>{company.name}</CardTitle>
                 <CardDescription className="flex items-center gap-1">
                   <Globe className="h-3.5 w-3.5" /> 
-                  {i === 1 ? "Technology" : 
-                   i === 2 ? "Software Development" : 
-                   i === 3 ? "IT Services" :
-                   i === 4 ? "Renewable Energy" :
-                   i === 5 ? "Financial Technology" :
-                   i === 6 ? "Healthcare Technology" :
-                   i === 7 ? "Cloud Computing" :
-                   i === 8 ? "Aerospace Engineering" :
-                   i === 9 ? "Real Estate" :
-                   i === 10 ? "Data Analytics" :
-                   i === 11 ? "Digital Media" :
-                   "Quantum Computing"}
+                  {company.industry}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                   <MapPin className="h-4 w-4" />
-                  {i === 1 ? "Bangalore" : 
-                   i === 2 ? "Mumbai" : 
-                   i === 3 ? "Delhi" :
-                   i === 4 ? "Pune" :
-                   i === 5 ? "Hyderabad" :
-                   i === 6 ? "Chennai" :
-                   i === 7 ? "Remote" :
-                   i === 8 ? "Bangalore" :
-                   i === 9 ? "Gurgaon" :
-                   i === 10 ? "Mumbai" :
-                   i === 11 ? "Noida" :
-                   "Bangalore"}
+                  {company.location}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                   <Users className="h-4 w-4" />
-                  {i === 1 ? "100-200" :
-                   i === 2 ? "50-150" :
-                   i === 3 ? "200-500" :
-                   i === 4 ? "75-125" :
-                   i === 5 ? "150-300" :
-                   i === 6 ? "300-600" :
-                   i === 7 ? "500-1000" :
-                   i === 8 ? "250-400" :
-                   i === 9 ? "100-250" :
-                   i === 10 ? "400-800" :
-                   i === 11 ? "80-180" :
-                   "600-1200"} employees
+                  {company.employees} employees
                 </div>
                 {/* Openings temporarily hidden — re-enable when feature is ready */}
                 <Button className="w-full" disabled>
